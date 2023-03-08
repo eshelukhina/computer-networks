@@ -1,25 +1,27 @@
 package org.hse.lab03;
 
 import java.io.*;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class SingleThreadServer {
-    private final int PORT = 8080;
+public class ClientHandler implements Runnable {
+    private final Socket client;
 
+    public ClientHandler(Socket client) throws IOException {
+        this.client = client;
+    }
+
+    @Override
     public void run() {
-        try (ServerSocket server = new ServerSocket(PORT)) {
-            Socket client = server.accept();
-
+        try (client) {
             BufferedReader input = new BufferedReader(new InputStreamReader(client.getInputStream()));
 
             while (!input.ready()) ;
 
             StringBuilder request = new StringBuilder();
-            while(input.ready()) {
+            while (input.ready()) {
                 String nextLine = input.readLine();
                 request.append(nextLine).append("\n");
             }
@@ -34,7 +36,7 @@ public class SingleThreadServer {
                 response.append("HTTP/1.1 404 Not Found\n");
                 response.append("\n");
             } else {
-                String fileContent =  Files.readString(path);
+                String fileContent = Files.readString(path);
                 response.append("HTTP/1.1 200 OK\n");
                 response.append("Content-Type: text/plain; charset=utf-8\n");
                 response.append("Content-Length: ").append(fileContent.length()).append("\n");
@@ -42,11 +44,10 @@ public class SingleThreadServer {
                 response.append(fileContent);
             }
 
-            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(client.getOutputStream()));
-            writer.write(response.toString());
-            writer.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
+            BufferedWriter output = new BufferedWriter(new OutputStreamWriter(client.getOutputStream()));
+            output.write(response.toString());
+            output.flush();
+        } catch (IOException ignore) {
         }
     }
 }
