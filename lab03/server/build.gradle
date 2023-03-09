@@ -1,0 +1,15 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group 'org.hse.lab03'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+application {
+    mainClass = 'org.hse.lab03.Main'
+}
